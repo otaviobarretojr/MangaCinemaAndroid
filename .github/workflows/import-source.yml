@@ -2,7 +2,7 @@ name: Import MangaCinema v0.2.0 and build APK
 on:
   push:
     branches: [main]
-    paths: ['.source-bundle/part08.txt']
+    paths: ['.source-bundle/part09.txt']
 permissions:
   contents: write
 jobs:
@@ -14,7 +14,7 @@ jobs:
           persist-credentials: true
       - name: Verify and restore source bundle
         run: |
-          test "$(find .source-bundle -name 'part*.txt' | wc -l)" -eq 8
+          test "$(find .source-bundle -name 'part*.txt' | wc -l)" -eq 9
           cat .source-bundle/part*.txt | tr -d '\n' | base64 -d > /tmp/manga.tar.xz
           echo "7a8704fe087f99d38f1a59f5c8531986cfbf50cd9567b49786fcbcfe5e9684f7  /tmp/manga.tar.xz" | sha256sum -c -
           tar -xJf /tmp/manga.tar.xz
