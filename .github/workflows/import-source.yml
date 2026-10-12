@@ -1,0 +1,51 @@
+name: Import MangaCinema v0.2.0 and build APK
+on:
+  push:
+    branches: [main]
+    paths: ['.source-bundle/part08.txt']
+permissions:
+  contents: write
+jobs:
+  import-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify and restore source bundle
+        run: |
+          test "$(find .source-bundle -name 'part*.txt' | wc -l)" -eq 8
+          cat .source-bundle/part*.txt | tr -d '\n' | base64 -d > /tmp/manga.tar.xz
+          echo "7a8704fe087f99d38f1a59f5c8531986cfbf50cd9567b49786fcbcfe5e9684f7  /tmp/manga.tar.xz" | sha256sum -c -
+          tar -xJf /tmp/manga.tar.xz
+          cp -a MangaCinemaAndroid/. .
+          rm -rf MangaCinemaAndroid .source-bundle .github/workflows/import-source.yml
+      - name: Commit imported Android project
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "feat: publish MangaCinema Android v0.2.0" || true
+          git push
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: android-actions/setup-android@v3
+      - run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Run Java tests
+        run: |
+          mkdir -p build/java-tests
+          javac -d build/java-tests app/src/main/java/com/mangacinema/reader/{SceneDetector,SceneTiming,YuvConverter}.java tests/{SceneDetectorTest,ExportTimingTest}.java
+          java -cp build/java-tests SceneDetectorTest
+          java -cp build/java-tests ExportTimingTest
+      - name: Build debug APK
+        run: gradle --no-daemon assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MangaCinema-v0.2.0-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
