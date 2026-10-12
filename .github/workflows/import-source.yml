@@ -2,7 +2,7 @@ name: Import MangaCinema v0.2.0 and build APK
 on:
   push:
     branches: [main]
-    paths: ['.source-bundle/part09.txt']
+    paths: ['.source-bundle/part09.txt', '.github/workflows/import-source.yml']
 permissions:
   contents: write
 jobs:
@@ -19,7 +19,8 @@ jobs:
           echo "7a8704fe087f99d38f1a59f5c8531986cfbf50cd9567b49786fcbcfe5e9684f7  /tmp/manga.tar.xz" | sha256sum -c -
           tar -xJf /tmp/manga.tar.xz
           cp -a MangaCinemaAndroid/. .
-          rm -rf MangaCinemaAndroid .source-bundle .github/workflows/import-source.yml
+          rm -rf MangaCinemaAndroid .source-bundle
+          git restore .github/workflows
       - name: Commit imported Android project
         run: |
           git config user.name "github-actions[bot]"
