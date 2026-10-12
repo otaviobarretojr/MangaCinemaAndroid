@@ -1,0 +1,57 @@
+name: Build MangaCinema Android APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'build.gradle'
+      - 'settings.gradle'
+      - 'gradle.properties'
+      - 'tests/**'
+
+permissions:
+  contents: read
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android 35
+        run: sdkmanager "platforms;android-35" "build-tools;35.0.0"
+      - name: Setup Gradle 8.10.2
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.10.2'
+      - name: Verify project sources
+        run: |
+          test -f app/build.gradle
+          test -f app/src/main/java/com/mangacinema/reader/MainActivity.java
+      - name: Test core logic
+        run: |
+          mkdir -p build/java-tests
+          javac -d build/java-tests \
+            app/src/main/java/com/mangacinema/reader/SceneDetector.java \
+            app/src/main/java/com/mangacinema/reader/SceneTiming.java \
+            app/src/main/java/com/mangacinema/reader/YuvConverter.java \
+            tests/SceneDetectorTest.java tests/ExportTimingTest.java
+          java -cp build/java-tests SceneDetectorTest
+          java -cp build/java-tests ExportTimingTest
+      - name: Build unsigned debug APK
+        run: gradle --no-daemon assembleDebug
+      - name: Publish APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MangaCinema-v0.2.0-debug
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
+          retention-days: 14
