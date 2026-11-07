@@ -39,7 +39,7 @@ const DEMO_BOOK = {
   {id:'p19',type:'end',scene:'sol',title:'Fim... por enquanto!',text:'Qual será a próxima aventura?\nContinue imaginando. Continue lendo!'}
  ]
 };
-let data = {books:[DEMO_BOOK],positions:{},prefs:{fontScale:1,theme:'light'}};
+let data = {books:[DEMO_BOOK],positions:{},prefs:{fontScale:1,theme:'light',motion:true}};
 let current = {view:'home',bookId:null};
 let quizAnswers = {};
 let db = null;
@@ -86,9 +86,10 @@ function getBook(id){return data.books.find(b=>b.id===id);}
 function getPosition(b){return Math.max(0,Math.min(b.pages.length-1,Number(data.positions[b.id])||0));}
 function pct(b){return b.pages.length>0?Math.round(((getPosition(b)+1)/b.pages.length)*100):0;}
 function art(scene='portal',image='',showTag=false){
- if(image) return `<img loading="eager" src="${escapeHTML(image)}" alt="Ilustração da página">`;
- return `<div class="scene-art" data-scene="${escapeHTML(scene)}"><div class="sparkle"></div><div class="sparkle"></div><div class="scene-symbol">?</div></div>${showTag?'<span class="art-placeholder-tag">ILUSTRAÇÃO EM PREPARAÇÃO</span>':''}`;
+ const visual=image?`<img loading="eager" src="${escapeHTML(image)}" class="motion-image" alt="Ilustração da página">`:`<div class="scene-art" data-scene="${escapeHTML(scene)}"><div class="sparkle"></div><div class="sparkle"></div><div class="scene-symbol">?</div></div>`;
+ return `<div class="motion-frame" data-motion-scene="${escapeHTML(scene)}">${visual}<span class="motion-glow"></span><span class="motion-particle p1"></span><span class="motion-particle p2"></span><span class="motion-particle p3"></span><span class="motion-particle p4"></span></div>${!image&&showTag?'<span class="art-placeholder-tag">ILUSTRAÇÃO EM PREPARAÇÃO</span>':''}`;
 }
+
 function navigate(view, bookId=null, push=true){
  if(window.speechSynthesis) speechSynthesis.cancel();
  current={view,bookId};
@@ -97,6 +98,7 @@ function navigate(view, bookId=null, push=true){
 }
 function render(){
  document.body.classList.toggle('reader',current.view==='reader');
+ document.body.classList.toggle('motion-off',data.prefs.motion===false);
  const isFull=['reader','editor'].includes(current.view);
  bottomNav.classList.toggle('hidden',isFull);
  backBtn.classList.toggle('hidden',!isFull);
@@ -142,7 +144,7 @@ function renderReader(){
  viewEl.innerHTML=`<div class="reader-wrap"><div class="reader-info"><span class="reader-kicker">${escapeHTML(book.title)}</span><span class="reader-count">PÁGINA ${pos+1} / ${book.pages.length}</span></div>
  <div class="progress-track" aria-label="Progresso da leitura"><span style="width:${pct(book)}%"></span></div>
  <section class="page-sheet" id="storyPage" aria-label="Página ${pos+1}">${pageContent}</section>
- <div class="reader-tools"><button class="tool-button" data-action="speak" ${isQuiz?'disabled':''}>🔊 Ouvir página</button><div class="actions"><button class="tool-button" data-action="font-minus" aria-label="Diminuir letra">A−</button><button class="tool-button" data-action="font-plus" aria-label="Aumentar letra">A+</button></div></div>
+ <div class="reader-tools"><button class="tool-button" data-action="toggle-motion" aria-pressed="${data.prefs.motion!==false}">${data.prefs.motion!==false?'✨ Movimento: ligado':'◯ Movimento: desligado'}</button><button class="tool-button" data-action="speak" ${isQuiz?'disabled':''}>🔊 Ouvir página</button><div class="actions"><button class="tool-button" data-action="font-minus" aria-label="Diminuir letra">A−</button><button class="tool-button" data-action="font-plus" aria-label="Aumentar letra">A+</button></div></div>
  <div class="page-nav"><button class="btn secondary" data-action="prev" ${pos===0?'disabled':''}>← Anterior</button><button class="btn" data-action="next">${pos===book.pages.length-1?'📚 Biblioteca':'Próxima →'}</button></div>
  <p class="footnote" style="text-align:center">Deslize a imagem para mudar de página. Seu progresso é salvo neste dispositivo.</p></div>`;
  document.documentElement.style.setProperty('--font-scale',String(data.prefs.fontScale||1));
@@ -274,6 +276,7 @@ async function handleAction(target){
   case 'font-plus':data.prefs.fontScale=Math.min(1.5,Number((data.prefs.fontScale+.1).toFixed(2)));queueSave();renderReader();break;
   case 'font-minus':data.prefs.fontScale=Math.max(.85,Number((data.prefs.fontScale-.1).toFixed(2)));queueSave();renderReader();break;
   case 'speak':speak();break;
+  case 'toggle-motion':data.prefs.motion=data.prefs.motion===false;queueSave();render();toast(data.prefs.motion?'Movimento ativado!':'Movimento desativado.');break;
   case 'answer':{
    if(!b)return;const pos=getPosition(b),qi=Number(target.dataset.question),answer=Number(target.dataset.option);
    quizAnswers[`${b.id}_${pos}_${qi}`]=answer;renderReader();break;
@@ -372,7 +375,7 @@ async function init(){
  installEvents();
  try{
   db=await openDB();const saved=await getState();
-  if(saved&&Array.isArray(saved.books))data={books:saved.books.map(sanitizeBook),positions:saved.positions||{},prefs:{fontScale:1,...(saved.prefs||{})}};
+  if(saved&&Array.isArray(saved.books))data={books:saved.books.map(sanitizeBook),positions:saved.positions||{},prefs:{fontScale:1,motion:true,...(saved.prefs||{})}};
   else await persist();
  }catch(err){
   console.warn('Local storage fallback',err);

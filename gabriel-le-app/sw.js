@@ -1,4 +1,4 @@
-const CACHE = 'gabriel-le-v1-20261107';
+const CACHE = 'gabriel-le-free-motion-v1-1-20261107';
 const STATIC = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png'];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(STATIC)).then(()=>self.skipWaiting()));
