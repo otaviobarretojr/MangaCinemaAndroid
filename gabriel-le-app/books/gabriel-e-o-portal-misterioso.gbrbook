@@ -4,126 +4,143 @@
   "subtitle": "Uma aventura de amizade e coragem",
   "description": "Gabriel, Luna, Theo e Floquinho descobrem um portal que leva a um mundo de blocos.",
   "category": "Aventura • 6 anos",
-  "cover": "",
+  "cover": "./assets/portal/p01.webp",
   "pages": [
     {
       "id": "p01",
       "type": "cover",
       "title": "Gabriel e o Portal Misterioso",
       "text": "Uma aventura de amizade e coragem. Preparado para entrar no portal?",
-      "scene": "portal"
+      "scene": "portal",
+      "image": "./assets/portal/p01.webp"
     },
     {
       "id": "p02",
       "type": "story",
       "title": "Conheça a turma",
       "text": "Gabriel é curioso e corajoso.\nLuna tem ideias criativas.\nTheo adora construir.\nFloquinho é um lobo muito fiel!",
-      "scene": "equipe"
+      "scene": "equipe",
+      "image": "./assets/portal/p02.webp"
     },
     {
       "id": "p03",
       "type": "story",
       "title": "Um dia de aventura",
       "text": "Gabriel chamou Luna e Theo para brincar.\nFloquinho foi junto.\nTodos correram para a floresta.",
-      "scene": "floresta"
+      "scene": "floresta",
+      "image": "./assets/portal/p03.jpg"
     },
     {
       "id": "p04",
       "type": "story",
       "title": "Uma luz roxa",
       "text": "De repente, Gabriel viu uma luz.\nEla vinha de um portal roxo!\n— Que lugar será esse?",
-      "scene": "portal"
+      "scene": "portal",
+      "image": "./assets/portal/p04.webp"
     },
     {
       "id": "p05",
       "type": "story",
       "title": "Três, dois, um!",
       "text": "Os amigos deram as mãos.\nGabriel contou até três.\nE todos entraram no portal!",
-      "scene": "portal"
+      "scene": "portal",
+      "image": "./assets/portal/p05.webp"
     },
     {
       "id": "p06",
       "type": "story",
       "title": "Tudo era diferente",
       "text": "Do outro lado, havia ilhas no céu, árvores roxas e rios brilhantes.\nEra um mundo feito de blocos!",
-      "scene": "ilha"
+      "scene": "ilha",
+      "image": "./assets/portal/p06.webp"
     },
     {
       "id": "p07",
       "type": "story",
       "title": "Uma trilha secreta",
       "text": "Floquinho farejou o chão.\nEle achou uma trilha de luz.\nOs três amigos foram atrás dele.",
-      "scene": "floresta"
+      "scene": "floresta",
+      "image": "./assets/portal/p07.webp"
     },
     {
       "id": "p08",
       "type": "story",
       "title": "O castelo escuro",
       "text": "A trilha levava a um castelo.\nLá, sombras de pedra se mexiam.\nOs amigos ficaram bem juntinhos.",
-      "scene": "castelo"
+      "scene": "castelo",
+      "image": "./assets/portal/p08.webp"
     },
     {
       "id": "p09",
       "type": "story",
       "title": "Um plano de equipe",
       "text": "— Tenho uma ideia! — disse Gabriel.\nTheo construiu um muro.\nLuna abriu um caminho de blocos.",
-      "scene": "equipe"
+      "scene": "equipe",
+      "image": "./assets/portal/p09.webp"
     },
     {
       "id": "p10",
       "type": "story",
       "title": "O Coração do Mundo",
       "text": "No castelo, havia um grande cristal.\nEle estava perdendo a sua luz.\nO mundo precisava de ajuda!",
-      "scene": "cristal"
+      "scene": "cristal",
+      "image": "./assets/portal/p10.webp"
     },
     {
       "id": "p11",
       "type": "story",
       "title": "O Guardião apareceu",
       "text": "BUM! Surgiu um gigante de sombra.\nEle queria guardar toda a luz.\nMas Gabriel não deixou os amigos sós.",
-      "scene": "castelo"
+      "scene": "castelo",
+      "image": "./assets/portal/p11.webp"
     },
     {
       "id": "p12",
       "type": "story",
       "title": "A grande missão",
       "text": "O Guardião lançou sombras no chão.\nGabriel protegeu os amigos.\nLuna e Theo correram até o cristal.",
-      "scene": "equipe"
+      "scene": "equipe",
+      "image": "./assets/portal/p12.webp"
     },
     {
       "id": "p13",
       "type": "story",
       "title": "A luz voltou!",
       "text": "Floquinho achou uma pedra de luz.\nOs amigos a levaram ao cristal.\nPLIM! Todo o castelo brilhou!",
-      "scene": "cristal"
+      "scene": "cristal",
+      "image": "./assets/portal/p13.webp"
     },
     {
       "id": "p14",
       "type": "story",
       "title": "O portal se abriu",
       "text": "As sombras foram embora.\nO portal voltou a aparecer.\nEra hora de voltar para casa.",
-      "scene": "portal"
+      "scene": "portal",
+      "image": "./assets/portal/p14.webp"
     },
     {
       "id": "p15",
       "type": "story",
       "title": "De volta ao lar",
       "text": "Os amigos saíram do portal.\nA floresta estava em paz.\nGabriel abraçou Floquinho.",
-      "scene": "floresta"
+      "scene": "floresta",
+      "image": "./assets/portal/p15.webp"
     },
     {
       "id": "p16",
       "type": "story",
       "title": "O maior tesouro",
       "text": "Gabriel olhou para seus amigos.\nEle tinha aprendido uma lição:\njuntos, somos mais fortes!",
-      "scene": "sol"
+      "scene": "sol",
+      "image": "./assets/portal/p16.webp"
     },
     {
       "id": "p17",
       "type": "moral",
       "title": "O que aprendemos?",
       "text": "CORAGEM é tentar, mesmo com medo.\nAMIZADE é cuidar dos amigos.\nEQUIPE é ajudar e aceitar ajuda.",
-      "scene": "equipe"
+      "scene": "equipe",
+      "image": "./assets/portal/p17.webp"
     },
     {
       "id": "p18",
@@ -159,14 +176,16 @@
           ],
           "correct": 1
         }
-      ]
+      ],
+      "image": "./assets/portal/p18.webp"
     },
     {
       "id": "p19",
       "type": "end",
       "title": "Fim... por enquanto!",
       "text": "Qual será a próxima aventura?\nContinue imaginando. Continue lendo!",
-      "scene": "sol"
+      "scene": "sol",
+      "image": "./assets/portal/p19.webp"
     }
   ]
 }
