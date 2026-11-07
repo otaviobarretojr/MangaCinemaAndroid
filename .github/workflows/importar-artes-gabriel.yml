@@ -1,0 +1,59 @@
+name: Importar ilustrações do livro Gabriel
+on:
+  push:
+    branches:
+      - feature/gabriel-le-biblioteca
+    paths:
+      - 'gabriel-le-app/books/asset_sources.json'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  importar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Buscar arquivos do projeto
+        uses: actions/checkout@v4
+        with:
+          ref: feature/gabriel-le-biblioteca
+          persist-credentials: true
+      - name: Preparar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Instalar ferramenta para compactar as imagens
+        run: python -m pip install --disable-pip-version-check Pillow
+      - name: Baixar e otimizar artes ilustradas
+        env:
+          PYTHONUNBUFFERED: '1'
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import io, json, urllib.request
+          from PIL import Image
+          base = Path('gabriel-le-app')
+          entries = json.loads((base/'books/asset_sources.json').read_text(encoding='utf-8'))['pages']
+          output = base/'assets/portal'
+          output.mkdir(parents=True, exist_ok=True)
+          for page, url in entries.items():
+              if not (len(page)==3 and page.startswith('p') and page[1:].isdigit()):
+                  raise ValueError('Identificador inválido de página')
+              dest = output/(page+'.webp')
+              req = urllib.request.Request(url, headers={'User-Agent':'GabrielLeBookAssetImporter/1.0'})
+              with urllib.request.urlopen(req,timeout=90) as resp:
+                  raw = resp.read(15*1024*1024)
+              with Image.open(io.BytesIO(raw)) as img:
+                  img = img.convert('RGB')
+                  img.thumbnail((1200,1600),Image.Resampling.LANCZOS)
+                  img.save(dest,format='WEBP',quality=82,method=6)
+              print(f'{page}: {dest.stat().st_size:,} bytes')
+          PY
+      - name: Publicar imagens na branch sem alterar a main
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add gabriel-le-app/assets/portal
+          if ! git diff --cached --quiet; then
+            git commit -m 'art: adicionar ilustrações individuais otimizadas do Portal Misterioso'
+            git push origin HEAD:feature/gabriel-le-biblioteca
+          fi
