@@ -15,3 +15,11 @@
 .motion-off .motion-frame .motion-image,.motion-off .motion-frame .scene-art,.motion-off .motion-glow,.motion-off .motion-particle{animation:none!important;transform:none!important}
 .motion-off .motion-particle{opacity:0!important}
 @media(prefers-reduced-motion:reduce){.motion-frame .motion-image,.motion-frame .scene-art,.motion-glow,.motion-particle{animation:none!important;transform:none!important}.motion-particle{opacity:0!important}}
+
+/* V1.2: arte em proporção vertical, sempre inteira e sem cortar personagens. */
+.page-illustration{height:auto;aspect-ratio:3/4;min-height:0;max-height:none}
+.page-illustration .motion-frame .motion-image{object-fit:contain}
+.quiz-art{width:100%;height:235px;overflow:hidden;border-radius:15px;margin-bottom:17px;background:#261950}
+.quiz-art .motion-frame .motion-image{object-fit:cover}
+@media(max-width:650px){.page-illustration{height:auto;aspect-ratio:3/4;min-height:0;max-height:none}.quiz-art{height:188px}}
+@media(max-height:680px){.page-illustration{height:auto;aspect-ratio:3/4;min-height:0}}
