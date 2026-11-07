@@ -15,6 +15,27 @@ function coverArt(book){return book.cover||(book.id===OFFICIAL_ID?OFFICIAL_ART.p
 const uid = () => 'g' + (globalThis.crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2,10)}`);
 const escapeHTML = v => String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const htmlLine = v => escapeHTML(v).replace(/\n/g, '<br>');
+
+/* Quadrinhos: falas publicadas por página ou falas personalizadas da família. */
+function dialogueRows(book,page){
+ const custom=Array.isArray(page?.dialogues)?page.dialogues:[];
+ const official=book?.id===OFFICIAL_ID?(window.GABRIEL_COMIC?.[page?.id]||[]):[];
+ const rows=custom.length?custom:official;
+ return rows.map(row=>Array.isArray(row)?{speaker:String(row[0]||'Narrador'),text:String(row[1]||'')}:{speaker:String(row?.speaker||'Narrador'),text:String(row?.text||'')}).filter(row=>row.text.trim());
+}
+function renderComic(book,page){
+ const rows=dialogueRows(book,page);
+ if(!rows.length)return `<div class="page-story"><h2>${escapeHTML(page.title)}</h2><p>${escapeHTML(page.text)}</p></div>`;
+ return `<div class="comic-story"><h2>${escapeHTML(page.title)}</h2><div class="comic-dialogues" aria-label="Diálogos desta página">${rows.map((row,i)=>`<div class="comic-bubble" style="--speaker-color:${['#3a77d1','#329d64','#c95d54','#7654b2'][i%4]}"><span class="comic-speaker">${escapeHTML(row.speaker)}</span><p>${escapeHTML(row.text)}</p></div>`).join('')}</div><details class="comic-original"><summary>📖 Ler também a narração</summary><p>${escapeHTML(page.text)}</p></details></div>`;
+}
+function encodeDialogues(dialogues){return (dialogues||[]).map(row=>`${row.speaker||'Narrador'} | ${row.text||''}`).join('\n');}
+function parseDialogues(value){
+ return String(value||'').split('\n').map(v=>v.trim()).filter(Boolean).slice(0,12).map(line=>{
+  const at=line.indexOf('|');if(at<1||at>=line.length-1)throw new Error('Use: Personagem | fala');
+  return {speaker:line.slice(0,at).trim().slice(0,40),text:line.slice(at+1).trim().slice(0,300)};
+ }).filter(row=>row.speaker&&row.text);
+}
+
 const DEMO_BOOK = {
  id:'gabriel-portal-01',
  title:'Gabriel e o Portal Misterioso',
@@ -48,7 +69,7 @@ const DEMO_BOOK = {
   {id:'p19',type:'end',scene:'sol',title:'Fim... por enquanto!',text:'Qual será a próxima aventura?\nContinue imaginando. Continue lendo!'}
  ]
 };
-let data = {books:[DEMO_BOOK],positions:{},prefs:{fontScale:1,theme:'light',motion:true}};
+let data = {books:[DEMO_BOOK],positions:{},prefs:{fontScale:1,theme:'light',motion:true,readingMode:'story'}};
 let current = {view:'home',bookId:null};
 let quizAnswers = {};
 let db = null;
@@ -148,12 +169,12 @@ function renderReader(){
     }).join('')}${answered!==undefined?`<small class="quiz-feedback">${answered===q.correct?'🌟 Parabéns! Você acertou!':'Quase! Tente outra resposta.'}</small>`:''}</div>`;
    }).join('')}</div>`;
  }else{
-  pageContent=`<div class="page-illustration">${art(page.scene,pageArt(book,page),true)}</div><div class="page-story"><h2>${escapeHTML(page.title)}</h2><p>${escapeHTML(page.text)}</p></div>`;
+  pageContent=`<div class="page-illustration">${art(page.scene,pageArt(book,page),true)}</div>${data.prefs.readingMode==='comic'?renderComic(book,page):`<div class="page-story"><h2>${escapeHTML(page.title)}</h2><p>${escapeHTML(page.text)}</p></div>`}`;
  }
  viewEl.innerHTML=`<div class="reader-wrap"><div class="reader-info"><span class="reader-kicker">${escapeHTML(book.title)}</span><span class="reader-count">PÁGINA ${pos+1} / ${book.pages.length}</span></div>
  <div class="progress-track" aria-label="Progresso da leitura"><span style="width:${pct(book)}%"></span></div>
  <section class="page-sheet" id="storyPage" aria-label="Página ${pos+1}">${pageContent}</section>
- <div class="reader-tools"><button class="tool-button" data-action="toggle-motion" aria-pressed="${data.prefs.motion!==false}">${data.prefs.motion!==false?'✨ Movimento: ligado':'◯ Movimento: desligado'}</button><button class="tool-button" data-action="speak" ${isQuiz?'disabled':''}>🔊 Ouvir página</button><div class="actions"><button class="tool-button" data-action="font-minus" aria-label="Diminuir letra">A−</button><button class="tool-button" data-action="font-plus" aria-label="Aumentar letra">A+</button></div></div>
+ <div class="reading-switch" role="group" aria-label="Modo de leitura"><button class="reading-switch-button ${data.prefs.readingMode==='comic'?'':'active'}" data-action="reading-story" aria-pressed="${data.prefs.readingMode!=='comic'}">📖 História</button><button class="reading-switch-button ${data.prefs.readingMode==='comic'?'active':''}" data-action="reading-comic" aria-pressed="${data.prefs.readingMode==='comic'}">💬 Quadrinhos</button></div><div class="reader-tools"><button class="tool-button" data-action="toggle-motion" aria-pressed="${data.prefs.motion!==false}">${data.prefs.motion!==false?'✨ Movimento: ligado':'◯ Movimento: desligado'}</button><button class="tool-button" data-action="speak" ${isQuiz?'disabled':''}>🔊 Ouvir página</button><div class="actions"><button class="tool-button" data-action="font-minus" aria-label="Diminuir letra">A−</button><button class="tool-button" data-action="font-plus" aria-label="Aumentar letra">A+</button></div></div>
  <div class="page-nav"><button class="btn secondary" data-action="prev" ${pos===0?'disabled':''}>← Anterior</button><button class="btn" data-action="next">${pos===book.pages.length-1?'📚 Biblioteca':'Próxima →'}</button></div>
  <p class="footnote" style="text-align:center">Deslize a imagem para mudar de página. Seu progresso é salvo neste dispositivo.</p></div>`;
  document.documentElement.style.setProperty('--font-scale',String(data.prefs.fontScale||1));
@@ -161,7 +182,8 @@ function renderReader(){
 }
 function changePage(delta){
  const b=getBook(current.bookId);if(!b)return;
- const next=getPosition(b)+delta;
+ if('speechSynthesis' in window)speechSynthesis.cancel();
+  const next=getPosition(b)+delta;
  if(next>=b.pages.length){navigate('home');return;}
  data.positions[b.id]=Math.max(0,next);queueSave();renderReader();window.scrollTo({top:0,behavior:'instant'});
 }
@@ -195,7 +217,8 @@ function renderEditor(){
  <label class="field"><span>Tipo da página</span><select data-page-field="type" data-index="${i}">${['cover','story','moral','quiz','end'].map(k=>`<option value="${k}" ${p.type===k?'selected':''}>${{cover:'Capa',story:'História',moral:'Aprendizado',quiz:'Perguntas',end:'Final'}[k]}</option>`).join('')}</select></label>
  <label class="field"><span>Título</span><input data-page-field="title" data-index="${i}" maxlength="160" value="${escapeHTML(p.title)}"></label>
  <label class="field"><span>Texto da página</span><textarea rows="4" data-page-field="text" data-index="${i}">${escapeHTML(p.text||'')}</textarea><small class="helper">O texto aparece nítido sobre um fundo claro, fora da imagem.</small></label>
- <label class="field"><span>Fundo provisório</span><select data-page-field="scene" data-index="${i}">${['portal','floresta','ilha','castelo','cristal','equipe','sol','quiz'].map(k=>`<option value="${k}" ${p.scene===k?'selected':''}>${{portal:'Portal roxo',floresta:'Floresta',ilha:'Ilhas flutuantes',castelo:'Castelo',cristal:'Cristal',equipe:'Amigos',sol:'Pôr do sol',quiz:'Desafio'}[k]}</option>`).join('')}</select></label>
+ <label class="field"><span>Balões de fala para quadrinhos</span><textarea rows="3" data-page-field="dialoguesText" data-index="${i}" placeholder="Gabriel | Vamos explorar!">${escapeHTML(encodeDialogues(p.dialogues||[]))}</textarea><small class="helper">Uma fala por linha, no formato Personagem | fala. Deixe em branco para manter os diálogos oficiais.</small></label>
+  <label class="field"><span>Fundo provisório</span><select data-page-field="scene" data-index="${i}">${['portal','floresta','ilha','castelo','cristal','equipe','sol','quiz'].map(k=>`<option value="${k}" ${p.scene===k?'selected':''}>${{portal:'Portal roxo',floresta:'Floresta',ilha:'Ilhas flutuantes',castelo:'Castelo',cristal:'Cristal',equipe:'Amigos',sol:'Pôr do sol',quiz:'Desafio'}[k]}</option>`).join('')}</select></label>
  <label class="field"><span>Importar ilustração desta página</span><input type="file" accept="image/png,image/jpeg,image/webp" data-image-upload="${i}"><small class="helper">PNG, JPEG ou WebP. A imagem será otimizada para o celular.</small></label>
  <div class="image-mini-preview">${pageArt(b,p)?`<img src="${escapeHTML(pageArt(b,p))}" alt="Imagem da página ${i+1}">${p.image?'Imagem personalizada':'Arte oficial publicada'}`:'◻ Esta página ainda não tem imagem definitiva.'}</div>
  ${p.image?`<button class="btn small ghost" data-action="remove-image" data-index="${i}">Remover imagem</button>`:''}
@@ -219,7 +242,7 @@ function sanitizeBook(book){
  const newBook={id:/^[a-zA-Z0-9_-]{1,80}$/.test(String(book.id||''))?String(book.id):uid(),title:String(book.title||'Livro sem título').slice(0,140),subtitle:String(book.subtitle||'').slice(0,160),description:String(book.description||'').slice(0,600),category:String(book.category||'Aventura').slice(0,100),cover:normalizeImage(book.cover),pages:[]};
  newBook.pages=book.pages.map((p,i)=>{
   const kinds=['cover','story','moral','quiz','end']; const scenes=['portal','floresta','ilha','castelo','cristal','equipe','sol','quiz'];
-  return {id:String(p.id||uid()).slice(0,100),type:kinds.includes(p.type)?p.type:'story',scene:scenes.includes(p.scene)?p.scene:'portal',title:String(p.title||`Página ${i+1}`).slice(0,160),text:String(p.text||'').slice(0,2500),image:normalizeImage(p.image),questions:Array.isArray(p.questions)?p.questions.slice(0,15).map(q=>({question:String(q.question||'').slice(0,300),options:Array.isArray(q.options)?q.options.slice(0,3).map(o=>String(o).slice(0,150)):['A','B','C'],correct:[0,1,2].includes(Number(q.correct))?Number(q.correct):0})):[]};
+  return {id:String(p.id||uid()).slice(0,100),type:kinds.includes(p.type)?p.type:'story',scene:scenes.includes(p.scene)?p.scene:'portal',title:String(p.title||`Página ${i+1}`).slice(0,160),text:String(p.text||'').slice(0,2500),image:normalizeImage(p.image),dialogues:Array.isArray(p.dialogues)?p.dialogues.slice(0,12).map(row=>({speaker:String(row?.speaker||'Narrador').slice(0,40),text:String(row?.text||'').slice(0,300)})).filter(row=>row.text):[],questions:Array.isArray(p.questions)?p.questions.slice(0,15).map(q=>({question:String(q.question||'').slice(0,300),options:Array.isArray(q.options)?q.options.slice(0,3).map(o=>String(o).slice(0,150)):['A','B','C'],correct:[0,1,2].includes(Number(q.correct))?Number(q.correct):0})):[]};
  });
  return newBook;
 }
@@ -251,7 +274,8 @@ function speak(){
  if(!('speechSynthesis' in window)){toast('Este navegador não oferece leitura em voz alta.',true);return;}
  const b=getBook(current.bookId);if(!b)return;const p=b.pages[getPosition(b)];
  if(speechSynthesis.speaking){speechSynthesis.cancel();toast('Narração pausada');return;}
- const utterance=new SpeechSynthesisUtterance([p.title,p.text].filter(Boolean).join('. '));
+ const dialogue=dialogueRows(b,p);const speechText=data.prefs.readingMode==='comic'&&dialogue.length?[p.title,...dialogue.map(d=>`${d.speaker}: ${d.text}`)].join('. '):[p.title,p.text].filter(Boolean).join('. ');
+  const utterance=new SpeechSynthesisUtterance(speechText);
  utterance.lang='pt-BR';utterance.rate=.87;utterance.pitch=1.04;
  const voice=speechSynthesis.getVoices().find(v=>v.lang.toLowerCase()==='pt-br');if(voice)utterance.voice=voice;
  speechSynthesis.speak(utterance);toast('🔊 Lendo a página');
@@ -285,6 +309,11 @@ async function handleAction(target){
   case 'font-plus':data.prefs.fontScale=Math.min(1.5,Number((data.prefs.fontScale+.1).toFixed(2)));queueSave();renderReader();break;
   case 'font-minus':data.prefs.fontScale=Math.max(.85,Number((data.prefs.fontScale-.1).toFixed(2)));queueSave();renderReader();break;
   case 'speak':speak();break;
+   case 'reading-story':case 'reading-comic':{
+    data.prefs.readingMode=action==='reading-comic'?'comic':'story';
+    if('speechSynthesis' in window)speechSynthesis.cancel();
+    queueSave();renderReader();break;
+   }
   case 'toggle-motion':data.prefs.motion=data.prefs.motion===false;queueSave();render();toast(data.prefs.motion?'Movimento ativado!':'Movimento desativado.');break;
   case 'answer':{
    if(!b)return;const pos=getPosition(b),qi=Number(target.dataset.question),answer=Number(target.dataset.option);
@@ -348,14 +377,19 @@ function installEvents(){
   const b=getBook(current.bookId);
   if(!b)return;
   if(el.hasAttribute('data-book-field')){b[el.dataset.bookField]=el.value;queueSave();}
-  if(el.hasAttribute('data-page-field')&&el.dataset.pageField!=='questionsText'){
+  if(el.hasAttribute('data-page-field')&&!['questionsText','dialoguesText'].includes(el.dataset.pageField)){
    const p=b.pages[Number(el.dataset.index)];if(p){p[el.dataset.pageField]=el.value;queueSave();}
   }
  });
  document.addEventListener('change',event=>{
   const el=event.target;
   if(el.matches('[data-image-upload],[data-cover-upload]'))return handleFileChange(el);
-  if(el.dataset.pageField==='questionsText'){
+  if(el.dataset.pageField==='dialoguesText'){
+    const b=getBook(current.bookId);if(!b)return;
+    try{b.pages[Number(el.dataset.index)].dialogues=parseDialogues(el.value);queueSave();toast('Balões salvos.');}
+    catch(e){toast(e.message,true);}
+   }
+   if(el.dataset.pageField==='questionsText'){
    const b=getBook(current.bookId);if(!b)return;
    try{b.pages[Number(el.dataset.index)].questions=parseQuestions(el.value);queueSave();toast('Perguntas salvas.');}
    catch(e){toast(e.message,true);}
@@ -398,7 +432,7 @@ async function init(){
  installEvents();
  try{
   db=await openDB();const saved=await getState();
-  if(saved&&Array.isArray(saved.books))data={books:saved.books.map(sanitizeBook),positions:saved.positions||{},prefs:{fontScale:1,motion:true,...(saved.prefs||{})}};
+  if(saved&&Array.isArray(saved.books))data={books:saved.books.map(sanitizeBook),positions:saved.positions||{},prefs:{fontScale:1,motion:true,readingMode:'story',...(saved.prefs||{})}};
   else await persist();
  }catch(err){
   console.warn('Local storage fallback',err);

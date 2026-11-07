@@ -23,3 +23,20 @@
 .quiz-art .motion-frame .motion-image{object-fit:cover}
 @media(max-width:650px){.page-illustration{height:auto;aspect-ratio:3/4;min-height:0;max-height:none}.quiz-art{height:188px}}
 @media(max-height:680px){.page-illustration{height:auto;aspect-ratio:3/4;min-height:0}}
+
+/* V1.3 — leitura de quadrinhos acessível, com texto separado da arte. */
+.reading-switch{display:flex;gap:7px;background:#192849;padding:6px;border:1px solid #4b628c;border-radius:15px;margin:12px 0 3px}
+.reading-switch-button{flex:1;background:transparent;color:#b6c7e8;font-weight:900;font-size:14px;min-height:43px;border:0;border-radius:10px}
+.reading-switch-button.active{background:#f6ebff;color:#392164;box-shadow:0 3px 12px #0003}
+.comic-story{background:#fdf8ed;padding:20px 17px 24px}
+.comic-story h2{font-size:clamp(22px,5vw,29px);margin:0 0 17px;line-height:1.15;color:#292b47}
+.comic-dialogues{display:flex;flex-direction:column;gap:14px}
+.comic-bubble{background:#fff;border:3px solid var(--speaker-color,#7065ad);border-radius:18px;padding:12px 17px 14px;box-shadow:5px 6px 0 #3b32681b;position:relative}
+.comic-bubble:nth-child(even){margin-left:8%}
+.comic-bubble:nth-child(odd){margin-right:8%}
+.comic-speaker{display:inline-block;background:var(--speaker-color,#7065ad);color:#fff;border-radius:9px;padding:4px 9px;font-size:13px;font-weight:950;letter-spacing:.02em;margin-bottom:7px}
+.comic-bubble p{margin:0;line-height:1.45;font-weight:720;font-size:calc(clamp(18px,4.6vw,24px) * var(--font-scale))}
+.comic-original{border-top:1px solid #e2dbce;margin-top:18px;padding-top:12px;color:#494969}
+.comic-original summary{cursor:pointer;font-size:13px;font-weight:800}
+.comic-original p{white-space:pre-line;line-height:1.5;font-size:calc(16px * var(--font-scale));margin:12px 2px 0}
+@media(max-width:420px){.comic-story{padding:16px 11px 20px}.comic-bubble{padding:11px 12px 13px}.comic-bubble:nth-child(even){margin-left:4%}.comic-bubble:nth-child(odd){margin-right:4%}}

@@ -1,5 +1,5 @@
-const CACHE = 'gabriel-le-v4-ilustrado-20261107';
-const STATIC = ['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png','./books/catalog.json','./books/gabriel-e-o-portal-misterioso.gbrbook',...Array.from({length:19},(_,i)=>'./assets/portal/p'+String(i+1).padStart(2,'0')+(i===2?'.jpg':'.webp'))];
+const CACHE = 'gabriel-le-v5-quadrinhos-20261107';
+const STATIC = ['./','./index.html','./styles.css','./app.js','./comic.js','./manifest.webmanifest','./assets/icon-192.png','./assets/icon-512.png','./books/catalog.json','./books/gabriel-e-o-portal-misterioso.gbrbook',...Array.from({length:19},(_,i)=>'./assets/portal/p'+String(i+1).padStart(2,'0')+(i===2?'.jpg':'.webp'))];
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(STATIC)).then(()=>self.skipWaiting()));
 });
