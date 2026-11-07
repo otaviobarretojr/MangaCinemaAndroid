@@ -47,3 +47,20 @@ Leitor de histórias infantis em português, criado para uso familiar. Projeto *
 O código está numa branch separada do `MangaCinemaAndroid`, mas ainda dentro do **repositório público** dele. Planejado: criar `Gabriel-Aventuras` como repositório independente, preferencialmente **privado**, mover esta pasta para a raiz, ajustar o Render e então retirar a branch temporária. Não salvar fotos privadas da criança em repositório público.
 
 Projeto familiar inspirado em universos de blocos, não oficial da Mojang/Microsoft.
+
+## Edição ilustrada v1.2 — publicada em 07/11/2026
+
+- 19 ilustrações individuais: páginas p01, p02, p04–p19 em WebP e p03 em JPEG.
+- Arquivos permanentes em `assets/portal/`; ilustrações e texto permanecem separados para não cortar frases.
+- `app.js` usa `OFFICIAL_ART` para exibir as novas imagens **mesmo em livros antigos já salvos no aparelho**, sem apagar títulos/textos locais nem substituir imagens personalizadas.
+- Página 18 agora mostra ilustração própria junto das perguntas interativas.
+- Imagens são pré-armazenadas para uso offline pela nova versão do service worker.
+- `books/catalog.json` permite publicar títulos **novos** que surgem na biblioteca quando houver conexão. Obras do usuário com o mesmo ID não são substituídas automaticamente.
+- A página foi adaptada para a proporção vertical das cenas, com imagem inteira e texto abaixo.
+- O site continua um PWA instalável, não APK; não houve geração de vídeo pago.
+- A equipe familiar pode criar ou importar outras histórias na Área dos Pais. Os arquivos editados localmente permanecem no aparelho, salvo backup manual.
+- Validação: 19 imagens presentes no repositório, importação automatizada via GitHub Actions bem-sucedida, último deploy Render confirmado como `live`. Teste em aparelho físico ainda recomendado.
+
+### Novas histórias
+
+Criar um arquivo `.gbrbook` com novo `id` na pasta `books/`, adicionar as ilustrações permanentes em `assets/`, incluir a entrada no `books/catalog.json` e publicar. Não é necessário reconstruir o aplicativo.
