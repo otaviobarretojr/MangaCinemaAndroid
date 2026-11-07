@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101831">
+  <meta name="description" content="Biblioteca de aventuras infantis do Gabriel, com leitura offline e histórias ilustradas.">
+  <meta name="color-scheme" content="light dark">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" type="image/png" href="./assets/icon-192.png">
+  <link rel="apple-touch-icon" href="./assets/icon-192.png">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Gabriel • Biblioteca de Aventuras</title>
+</head>
+<body>
+  <div id="app" class="app-shell">
+    <header class="app-topbar">
+      <button class="top-icon hidden" id="backBtn" aria-label="Voltar">‹</button>
+      <div class="brand-lockup" aria-label="Biblioteca do Gabriel"><span class="brand-glyph">▣</span><span>GABRIEL<span class="brand-dot">.</span><small>MINHAS AVENTURAS</small></span></div>
+      <button class="top-icon" id="homeBtn" title="Início" aria-label="Início">⌂</button>
+    </header>
+    <main id="view" class="main-view" aria-live="polite"></main>
+    <nav id="bottomNav" class="bottom-nav" aria-label="Navegação">
+      <button class="nav-btn active" data-nav="home"><span aria-hidden="true">⌂</span> Biblioteca</button>
+      <button class="nav-btn" data-nav="parents"><span aria-hidden="true">⚙</span> Área dos pais</button>
+    </nav>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </div>
+  <input type="file" accept=".json,.gbrbook,application/json" id="importInput" hidden>
+  <script src="./app.js" defer></script>
+</body>
+</html>
