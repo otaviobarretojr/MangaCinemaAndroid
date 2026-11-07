@@ -1,0 +1,10 @@
+{
+  "schema": 1,
+  "books": [
+    {
+      "id": "gabriel-portal-01",
+      "file": "./books/gabriel-e-o-portal-misterioso.gbrbook",
+      "revision": 2
+    }
+  ]
+}
