@@ -1,29 +1,49 @@
 # Gabriel Lê — Biblioteca de Aventuras
-Projeto infantil separado da aplicação MangaCinemaAndroid.
 
-## Status
-- Branch de preparação do futuro repositório independente.
-- A versão PWA 1.0 já existe como pacote ZIP entregue no ChatGPT, mas **não foi publicada nem transferida integralmente para esta branch**.
-- Nenhum arquivo do app original foi modificado; este diretório é isolado e não deve ser mesclado à branch main do MangaCinemaAndroid.
-- O livro de demonstração abaixo pode ser importado no leitor PWA a partir do arquivo `.gbrbook`.
+Leitor de histórias infantis em português, criado para uso familiar. Projeto **PWA**: instala-se na tela inicial do Android pelo Chrome após abrir o site HTTPS.
 
-## Objetivo
-Leitor de livros ilustrados para criança de 6 anos, com páginas independentes, ilustrações sem texto embutido, balões/legendas renderizados com HTML, progresso de leitura, biblioteca de histórias, exercícios e área de pais.
+## Acessos
 
-## Fluxo editorial
-1. Roteiro e divisão do livro em cenas.
-2. Guia fixo dos personagens (Gabriel, Luna, Theo e Floquinho).
-3. Uma ilustração por página, com revisão de legibilidade e continuidade.
-4. Importar imagens individualmente no editor PWA.
-5. Testar em celular; exportar backup .gbrbook.
-6. Publicar novas histórias e edições no catálogo.
+- Aplicativo publicado: https://gabriel-le-aventuras.onrender.com/
+- Render: https://dashboard.render.com/static/srv-dbnn8ek9v7es73d83a2g
+- Código-fonte: branch `feature/gabriel-le-biblioteca`, pasta `gabriel-le-app/` (não mesclar à main).
 
-## Próximos passos técnicos
-- Importar o pacote completo do PWA 1.0 (index.html, app.js, styles.css, sw.js, manifest.webmanifest, ícones).
-- Preparar GitHub Actions para validação e deploy.
-- Criar um **novo repositório privado ou público dedicado** e migrar o histórico da branch, sem manter dependência do MangaCinemaAndroid.
-- Definir armazenamento/sincronização entre dispositivos. O PWA 1.0 atual usa armazenamento local; a publicação de histórias não é automática nos aparelhos.
-- Gerar ilustrações definitivas uma a uma e validar todas as páginas.
+## Status real — 07/11/2026
 
-## Privacidade e direitos
-O conteúdo é destinado a uso familiar. Não armazenar fotos pessoais da criança no repositório público. Estética voxel inspirada em jogos de blocos sem insinuar ser produto oficial da Mojang/Microsoft.
+- PWA completo na pasta atual (`index.html`, `styles.css`, `app.js`, `sw.js`, manifesto e ícones).
+- Serviço estático Render implantado; deploy inicial reportado como `live`.
+- Testes automatizados locais: abertura da biblioteca, navegação, edição, upload de imagem, inclusão/importação de livro e quiz, sem erros JavaScript. **Ainda falta validar em Android físico.**
+- Livro de demonstração: `books/gabriel-e-o-portal-misterioso.gbrbook`, com 19 páginas de texto, quiz e **ilustrações definitivas pendentes**.
+- O Render acompanha automaticamente commits na branch `feature/gabriel-le-biblioteca`.
+
+## Como usar
+
+1. Abra o site no Chrome do Android.
+2. No menu do navegador, escolha **Instalar app** ou **Adicionar à tela inicial**, quando disponível.
+3. Abra o livro de demonstração na biblioteca.
+4. Para acrescentar ilustrações: **Área dos pais > Editar > Importar ilustração desta página**.
+5. Antes de trocar de telefone, exporte um **backup** da biblioteca.
+
+## Arquitetura e limites
+
+- HTML/CSS/JavaScript sem backend; app roda offline depois de carregar todos os assets e registrar o service worker.
+- Livros, imagens importadas e posição de leitura ficam no **IndexedDB do dispositivo**: sem sincronização automática entre aparelhos.
+- O site público entrega o *código* e o livro de demonstração embutido, mas alterações feitas na Área dos pais **não aparecem nos outros aparelhos nem são enviadas para o GitHub**.
+- Ao apagar dados do navegador, há risco de perder a biblioteca local; use a exportação.
+- Sem conta, anúncios ou analytics. Área dos pais ainda **não tem bloqueio de acesso**; a segurança física do dispositivo continua importante.
+- Para novas histórias chegarem automaticamente a todos os aparelhos, é necessária uma próxima versão com catálogo remoto versionado e política de atualização.
+
+## Processo editorial
+
+1. Escrever roteiro e dividir em páginas.
+2. Preparar guia visual dos personagens Gabriel, Luna, Theo e Floquinho.
+3. Criar **uma arte por página**, sem texto, garantindo consistência e margem de segurança.
+4. Compor texto e balões pelo app (não dentro da ilustração).
+5. Revisar em celular: cortes, legibilidade, continuidade, navegabilidade e quiz.
+6. Exportar o livro `.gbrbook` e manter cópias de segurança.
+
+## Futuro repositório isolado
+
+O código está numa branch separada do `MangaCinemaAndroid`, mas ainda dentro do **repositório público** dele. Planejado: criar `Gabriel-Aventuras` como repositório independente, preferencialmente **privado**, mover esta pasta para a raiz, ajustar o Render e então retirar a branch temporária. Não salvar fotos privadas da criança em repositório público.
+
+Projeto familiar inspirado em universos de blocos, não oficial da Mojang/Microsoft.
