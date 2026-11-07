@@ -3,6 +3,15 @@
 const DB_NAME = 'gabriel-le-biblioteca';
 const DB_VERSION = 1;
 const STORE = 'dados';
+// O livro publicado usa arquivos permanentes do site. Ilustrações editadas pelo responsável têm prioridade.
+const OFFICIAL_ID='gabriel-portal-01';
+const OFFICIAL_ART=Object.fromEntries(Array.from({length:19},(_,i)=>{
+ const id='p'+String(i+1).padStart(2,'0');
+ return [id,'./assets/portal/'+id+(id==='p03'?'.jpg':'.webp')];
+}));
+function officialArt(book,page){return book?.id===OFFICIAL_ID?(OFFICIAL_ART[page?.id]||''):'';}
+function pageArt(book,page){return page?.image||officialArt(book,page);}
+function coverArt(book){return book.cover||(book.id===OFFICIAL_ID?OFFICIAL_ART.p01:'');}
 const uid = () => 'g' + (globalThis.crypto?.randomUUID?.() || `${Date.now()}_${Math.random().toString(36).slice(2,10)}`);
 const escapeHTML = v => String(v ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const htmlLine = v => escapeHTML(v).replace(/\n/g, '<br>');
@@ -112,16 +121,16 @@ function renderHome(){
  const books=data.books.map(b=>{
  const pos=getPosition(b);
  return `<button class="book-card" data-action="open-book" data-book="${escapeHTML(b.id)}" aria-label="Abrir ${escapeHTML(b.title)}">
-  <div class="book-visual">${art(b.pages?.[0]?.scene||'portal',b.cover)}<div class="book-cover-title">${escapeHTML(b.title)}</div></div>
+  <div class="book-visual">${art(b.pages?.[0]?.scene||'portal',coverArt(b))}<div class="book-cover-title">${escapeHTML(b.title)}</div></div>
   <div class="book-meta"><strong>${escapeHTML(b.subtitle||'Uma nova aventura')}</strong><p>${escapeHTML(b.description||'Venha descobrir esta história.')}</p>
    <div class="book-meta-foot"><span>${pos===0?'COMEÇAR A LER':'CONTINUAR LENDO'}</span><span>${escapeHTML(String(b.pages.length))} PÁGINAS ↗</span></div>
    <div class="mini-progress"><i style="width:${pct(b)}%"></i></div>
   </div></button>`;
  }).join('');
- viewEl.innerHTML=`<section class="hero"><div><span class="pill">✦ UM MUNDO DE HISTÓRIAS</span><h1 class="hero-title">Olá, Gabriel!<br>Pronto para uma <em>aventura?</em></h1><p class="section-sub">Escolha um livro, vire as páginas e descubra mundos incríveis. Cada história é uma nova conquista!</p></div><div class="hero-art">${art('portal')}</div></section>
+ viewEl.innerHTML=`<section class="hero"><div><span class="pill">✦ UM MUNDO DE HISTÓRIAS</span><h1 class="hero-title">Olá, Gabriel!<br>Pronto para uma <em>aventura?</em></h1><p class="section-sub">Escolha um livro, vire as páginas e descubra mundos incríveis. Cada história é uma nova conquista!</p></div><div class="hero-art">${art('portal',OFFICIAL_ART.p01)}</div></section>
  <div class="section-heading"><h2>📚 Sua biblioteca</h2><small>${data.books.length} ${data.books.length===1?'livro':'livros'}</small></div>
  <div class="book-grid">${books||'<div class="empty">Ainda não há livros. Peça para um responsável importar uma história.</div>'}</div>
- <p class="placeholder-note">✨ <strong>Nova edição em produção:</strong> as ilustrações da aventura serão adicionadas página por página. O texto já pode ser lido nesta versão de testes.</p>`;
+ <p class="placeholder-note">✨ <strong>Nova edição ilustrada:</strong> 19 imagens individuais, letras ajustáveis, narração e desafios para ler em família.</p>`;
 }
 function renderReader(){
  const book=getBook(current.bookId);if(!book){return navigate('home',null,false);}
@@ -131,7 +140,7 @@ function renderReader(){
  let pageContent;
  if(isQuiz){
   const questions=Array.isArray(page.questions)?page.questions:[];
-  pageContent=`<div class="quiz"><span class="eyebrow">⭐ MISSÃO DE LEITURA</span><h2>${escapeHTML(page.title)}</h2>${questions.map((q,i)=>{
+  pageContent=`<div class="quiz"><div class="quiz-art">${art(page.scene,pageArt(book,page))}</div><span class="eyebrow">⭐ MISSÃO DE LEITURA</span><h2>${escapeHTML(page.title)}</h2>${questions.map((q,i)=>{
     const answered=quizAnswers[`${book.id}_${pos}_${i}`];
     return `<div class="quiz-question"><p>${i+1}. ${escapeHTML(q.question)}</p>${q.options.map((opt,j)=>{
       const status=answered===j?(j===q.correct?' correct':' wrong'):'';
@@ -139,7 +148,7 @@ function renderReader(){
     }).join('')}${answered!==undefined?`<small class="quiz-feedback">${answered===q.correct?'🌟 Parabéns! Você acertou!':'Quase! Tente outra resposta.'}</small>`:''}</div>`;
    }).join('')}</div>`;
  }else{
-  pageContent=`<div class="page-illustration">${art(page.scene,page.image,true)}</div><div class="page-story"><h2>${escapeHTML(page.title)}</h2><p>${escapeHTML(page.text)}</p></div>`;
+  pageContent=`<div class="page-illustration">${art(page.scene,pageArt(book,page),true)}</div><div class="page-story"><h2>${escapeHTML(page.title)}</h2><p>${escapeHTML(page.text)}</p></div>`;
  }
  viewEl.innerHTML=`<div class="reader-wrap"><div class="reader-info"><span class="reader-kicker">${escapeHTML(book.title)}</span><span class="reader-count">PÁGINA ${pos+1} / ${book.pages.length}</span></div>
  <div class="progress-track" aria-label="Progresso da leitura"><span style="width:${pct(book)}%"></span></div>
@@ -166,7 +175,7 @@ function renderParents(){
  viewEl.innerHTML=`<div class="parent-head"><div><span class="eyebrow">ESPAÇO DA FAMÍLIA</span><h1>Área dos pais ⚙</h1><div class="section-sub">Adicione livros, organize páginas e importe uma ilustração por vez.</div></div></div>
  <div class="form-card"><h2>Adicionar histórias</h2><p>As histórias ficam salvas somente neste navegador. Importe um arquivo de livro ou crie uma nova aventura.</p><div class="actions"><button class="btn" data-action="new-book">＋ Novo livro</button><button class="btn secondary" data-action="import-book">↥ Importar história</button><button class="btn ghost" data-action="export-library">↓ Backup de tudo</button></div></div>
  <div class="section-heading"><h2>Livros cadastrados</h2><small>${data.books.length}</small></div>
- ${data.books.map(b=>`<div class="parent-book"><div><strong>${escapeHTML(b.title)}</strong><small>${b.pages.length} páginas · ${b.pages.filter(p=>!!p.image).length} imagens carregadas</small></div><div class="actions"><button class="btn small secondary" data-action="edit-book" data-book="${escapeHTML(b.id)}">Editar</button><button class="btn small ghost" data-action="export-book" data-book="${escapeHTML(b.id)}" title="Exportar livro">↓</button><button class="btn small danger" data-action="delete-book" data-book="${escapeHTML(b.id)}" title="Excluir livro">×</button></div></div>`).join('')}
+ ${data.books.map(b=>`<div class="parent-book"><div><strong>${escapeHTML(b.title)}</strong><small>${b.pages.length} páginas · ${b.pages.filter(p=>!!pageArt(b,p)).length} ilustrações</small></div><div class="actions"><button class="btn small secondary" data-action="edit-book" data-book="${escapeHTML(b.id)}">Editar</button><button class="btn small ghost" data-action="export-book" data-book="${escapeHTML(b.id)}" title="Exportar livro">↓</button><button class="btn small danger" data-action="delete-book" data-book="${escapeHTML(b.id)}" title="Excluir livro">×</button></div></div>`).join('')}
  <div class="form-card"><h3>Como funciona?</h3><p><strong>1.</strong> Crie a história e suas páginas.<br><strong>2.</strong> Adicione a imagem de cada página, uma por uma.<br><strong>3.</strong> O texto fica separado da ilustração para nunca ser cortado.<br><strong>4.</strong> Importe novos livros quando quiser, sem apagar os antigos.</p>
  <p class="footnote">🔒 Não há anúncios nem envio das histórias para servidores. Para ter a biblioteca em outros aparelhos, exporte um backup e importe no segundo aparelho. A instalação como aplicativo exige publicação em HTTPS.</p></div>`;
 }
@@ -181,7 +190,7 @@ function renderEditor(){
  ${b.cover?`<div class="image-mini-preview"><img src="${escapeHTML(b.cover)}" alt="Capa cadastrada">Capa salva <button class="btn small ghost" data-action="remove-cover">Remover</button></div>`:''}
  </div>
  <div class="section-heading"><h2>Páginas (${b.pages.length})</h2><button class="btn small" data-action="add-page">＋ Nova página</button></div>
- ${b.pages.map((p,i)=>`<details class="page-editor" id="editor-page-${i}"><summary>${i+1}. ${escapeHTML(p.title||'Sem título')} ${p.image?'🖼️':'○'}</summary>
+ ${b.pages.map((p,i)=>`<details class="page-editor" id="editor-page-${i}"><summary>${i+1}. ${escapeHTML(p.title||'Sem título')} ${pageArt(b,p)?'🖼️':'○'}</summary>
  <div class="page-editor-body">
  <label class="field"><span>Tipo da página</span><select data-page-field="type" data-index="${i}">${['cover','story','moral','quiz','end'].map(k=>`<option value="${k}" ${p.type===k?'selected':''}>${{cover:'Capa',story:'História',moral:'Aprendizado',quiz:'Perguntas',end:'Final'}[k]}</option>`).join('')}</select></label>
  <label class="field"><span>Título</span><input data-page-field="title" data-index="${i}" maxlength="160" value="${escapeHTML(p.title)}"></label>
@@ -204,7 +213,7 @@ function parseQuestions(text){
   return {question:x[0],options:x.slice(1,4),correct:Number(x[4])-1};
  });
 }
-function normalizeImage(v){return typeof v==='string' && /^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(v)?v:'';}
+function normalizeImage(v){if(typeof v!=='string')return '';if(/^data:image\/(png|jpeg|webp);base64,[a-zA-Z0-9+/=]+$/.test(v))return v;if(/^\.\/assets\/[a-zA-Z0-9_/-]+\.(png|jpg|jpeg|webp)$/.test(v)&&!v.includes('..'))return v;return '';}
 function sanitizeBook(book){
  if(!book || typeof book!=='object'|| !Array.isArray(book.pages)||!book.pages.length||book.pages.length>250)throw new Error('Livro inválido: confira a lista de páginas (até 250).');
  const newBook={id:/^[a-zA-Z0-9_-]{1,80}$/.test(String(book.id||''))?String(book.id):uid(),title:String(book.title||'Livro sem título').slice(0,140),subtitle:String(book.subtitle||'').slice(0,160),description:String(book.description||'').slice(0,600),category:String(book.category||'Aventura').slice(0,100),cover:normalizeImage(book.cover),pages:[]};
@@ -371,6 +380,20 @@ function installEvents(){
  });
  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;});
 }
+async function syncOfficialCatalog(){
+ try{
+  const response=await fetch('./books/catalog.json',{cache:'no-store'});if(!response.ok)return;
+  const catalog=await response.json();if(!Array.isArray(catalog.books))return;
+  let added=0;
+  for(const entry of catalog.books.slice(0,60)){
+   if(!/^\.\/books\/[a-zA-Z0-9_-]+\.gbrbook$/.test(entry.file))continue;
+   const bookResponse=await fetch(entry.file,{cache:'no-store'});if(!bookResponse.ok)continue;
+   const official=sanitizeBook(await bookResponse.json());
+   if(!data.books.some(existing=>existing.id===official.id)){data.books.push(official);added++;}
+  }
+  if(added)await persist();
+ }catch(e){console.info('Catálogo não disponível. Usando livros salvos.',e);}
+}
 async function init(){
  installEvents();
  try{
@@ -382,6 +405,7 @@ async function init(){
   try{const saved=JSON.parse(localStorage.getItem(DB_NAME));if(saved&&Array.isArray(saved.books))data=saved;}catch(e){}
   toast('Modo compatível: faça backups das histórias regularmente.',true);
  }
+ await syncOfficialCatalog();
  try{history.replaceState({view:'home',bookId:null},'',location.pathname+location.search);}catch(e){/* origem local ou de testes */}
  render();
  if('serviceWorker' in navigator && location.protocol!=='file:')navigator.serviceWorker.register('./sw.js').catch(console.warn);
